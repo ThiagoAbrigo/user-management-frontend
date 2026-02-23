@@ -1,6 +1,5 @@
 "use client";
 
-import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,8 +8,21 @@ import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
-import { getUserRole } from "@/services/auth.service";
-import { FiActivity } from "react-icons/fi";
+
+type Role = "ADMINISTRADOR" | "USUARIO";
+
+export function getUserRole(): Role | null {
+  if (typeof window === "undefined") return null;
+  const user = localStorage.getItem("user");
+  if (!user) return null;
+
+  const parsed = JSON.parse(user);
+  if (parsed.role === "ADMINISTRADOR" || parsed.role === "USUARIO") {
+    return parsed.role;
+  }
+
+  return null;
+}
 
 export function Sidebar() {
   const role = getUserRole();
@@ -126,7 +138,7 @@ export function Sidebar() {
 
                   <nav role="navigation" aria-label={section.label}>
                     <ul className="space-y-2">
-                      {section.items.map((item) => (
+                      {visibleItems.map((item) => (
                         <li key={item.title}>
                           {item.items.length ? (
                             <div>
