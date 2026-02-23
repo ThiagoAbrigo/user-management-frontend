@@ -1,10 +1,8 @@
 "use client";
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
-import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputGroup from "../FormElements/InputGroup";
-import { Checkbox } from "../FormElements/checkbox";
 import { authService } from "@/services/auth.service";
 
 export default function SigninWithPassword() {
@@ -31,27 +29,29 @@ export default function SigninWithPassword() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
-      await authService.login({
-        email: data.email,
-        password: data.password,
-      });
-      
-      setTimeout(() => {
+      const user = await authService.login(data.email, data.password);
+  
+      // Redirigir según rol
+      if (user.role === "ADMINISTRADOR") {
         router.push("/pages/participant");
-      }, 100);
+      } else if (user.role === "USUARIO") {
+        router.push("/pages/carnetizacion"); // Ajusta a tu página de usuario
+      } else {
+        setError("Rol no válido");
+      }
     } catch (err: any) {
       setError(err.message || "Credenciales inválidas. Intente nuevamente.");
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <div className="mb-4 rounded-lg border border-red-400/50 bg-red-500/10 backdrop-blur-sm p-4 text-sm text-red-300">
+        <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
           {error}
         </div>
       )}
@@ -59,7 +59,7 @@ export default function SigninWithPassword() {
       <InputGroup
         type="email"
         label=""
-        className="mb-4 [&_input]:border-white/20 [&_input]:bg-white/5 [&_input]:py-[15px] [&_input]:text-white [&_input]:placeholder-gray-400 focus:[&_input]:border-indigo-400 focus:[&_input]:bg-white/10 [&_input]:backdrop-blur-sm"
+        className="mb-4 [&_input]:border-gray-300 [&_input]:bg-white [&_input]:py-[15px] [&_input]:text-gray-900 [&_input]:placeholder-gray-400 focus:[&_input]:border-indigo-500 dark:[&_input]:border-gray-700 dark:[&_input]:bg-gray-900 dark:[&_input]:text-white dark:[&_input]:placeholder-gray-500"
         placeholder="Ingrese su email"
         name="email"
         handleChange={handleChange}
@@ -70,18 +70,19 @@ export default function SigninWithPassword() {
       <InputGroup
         type="password"
         label=""
-        className="mb-5 [&_input]:border-white/20 [&_input]:bg-white/5 [&_input]:py-[15px] [&_input]:text-white [&_input]:placeholder-gray-400 focus:[&_input]:border-indigo-400 focus:[&_input]:bg-white/10 [&_input]:backdrop-blur-sm"
+        className="mb-5 [&_input]:border-gray-300 [&_input]:bg-white [&_input]:py-[15px] [&_input]:text-gray-900 [&_input]:placeholder-gray-400 focus:[&_input]:border-indigo-500 dark:[&_input]:border-gray-700 dark:[&_input]:bg-gray-900 dark:[&_input]:text-white dark:[&_input]:placeholder-gray-500"
         placeholder="Ingrese su contraseña"
         name="password"
         handleChange={handleChange}
         value={data.password}
         icon={<PasswordIcon />}
       />
+
       <div className="mb-4.5">
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-indigo-600 p-4 font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 p-4 font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? "Iniciando sesión..." : "Ingresar"}
           {loading && (

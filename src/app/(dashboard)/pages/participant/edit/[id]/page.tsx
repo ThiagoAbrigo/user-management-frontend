@@ -1,5 +1,5 @@
 "use client";
-import { RegisterParticipantForm } from "@/components/Forms/register-participant-form";
+import { RegisterParticipantForm } from "@/components/Forms/user-form";
 import { use } from "react";
 
 interface EditParticipantPageProps {

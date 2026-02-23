@@ -2,24 +2,21 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ParticipantsTable } from "@/components/Tables/participant-table";
-import { participantService } from "@/services/participant.service";
 import type { Participant } from "@/types/participant";
 import Loader from "@/components/Loader/loader";
 import { Button } from "@/components/ui-elements/button";
-import { useSession } from "@/context/SessionContext";
+import { userService } from "@/services/users";
 
 export default function ParticipantPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { serverDown } = useSession();
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await participantService.getAll();
-      setParticipants(data);
-    } catch (error: any) {
-      if (error?.message === "SESSION_EXPIRED" || error?.message === "SERVER_DOWN") return;
+      const data = await userService.getAll();
+      setParticipants(data.data || []);
+    } catch (error: unknown) {
       console.error(error);
     } finally {
       setLoading(false);
@@ -29,17 +26,6 @@ export default function ParticipantPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleStatusChange = async (updatedParticipantId: string, newStatus: "ACTIVO" | "INACTIVO") => {
-    setParticipants((prev) =>
-      prev.map((p) =>
-        p.id === updatedParticipantId ? { ...p, status: newStatus } : p
-      )
-    );
-  };
-
-
-  if (serverDown) return null;
 
   if (loading) {
     return (
@@ -78,9 +64,9 @@ export default function ParticipantPage() {
         />
       </div>
       <div className="space-y-10">
-        <ParticipantsTable data={participants} onStatusChange={handleStatusChange} />
+        {/* Ya no pasamos handleStatusChange */}
+        <ParticipantsTable data={participants} />
       </div>
     </div>
   );
 }
-
