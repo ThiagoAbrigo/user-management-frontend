@@ -37,7 +37,7 @@ export default function SigninWithPassword() {
       if (user.role === "ADMINISTRADOR") {
         router.push("/pages/participant");
       } else if (user.role === "USUARIO") {
-        router.push("/pages/carnetizacion"); // Ajusta a tu página de usuario
+        router.push("/pages/participant/carnet");
       } else {
         setError("Rol no válido");
       }
@@ -47,7 +47,7 @@ export default function SigninWithPassword() {
       setLoading(false);
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       {error && (

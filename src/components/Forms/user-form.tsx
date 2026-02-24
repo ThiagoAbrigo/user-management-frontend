@@ -231,6 +231,7 @@ export default function UserForm() {
           {showResponsible && (
             <ResponsibleForm
               formData={formData}
+              setFormData={setFormData}
               handleChange={handleChange}
               errors={errors}
               disabled={!isMinor}

@@ -11,21 +11,17 @@ import { useSidebarContext } from "./sidebar-context";
 
 type Role = "ADMINISTRADOR" | "USUARIO";
 
-export function getUserRole(): Role | null {
-  if (typeof window === "undefined") return null;
-  const user = localStorage.getItem("user");
-  if (!user) return null;
-
-  const parsed = JSON.parse(user);
-  if (parsed.role === "ADMINISTRADOR" || parsed.role === "USUARIO") {
-    return parsed.role;
-  }
-
-  return null;
-}
-
 export function Sidebar() {
-  const role = getUserRole();
+  const [role, setRole] = useState<Role | null>(null);
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) return;
+  
+    const parsed = JSON.parse(user);
+    if (parsed.role === "ADMINISTRADOR" || parsed.role === "USUARIO") {
+      setRole(parsed.role);
+    }
+  }, []);
   const pathname = usePathname();
   const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
