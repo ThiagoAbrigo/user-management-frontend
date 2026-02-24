@@ -1,4 +1,4 @@
-// auth.service.ts
+// services/auth.service.ts
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const authService = {
@@ -15,23 +15,58 @@ export const authService = {
       if (!res.ok) {
         throw new Error(data.msg || "Error al iniciar sesión");
       }
-      localStorage.setItem("user", JSON.stringify(data.data));
 
-      return data.data;
+      const userFromBackend = data.data;
+
+      console.log("Usuario desde backend:", userFromBackend);
+
+      const userData = {
+        id: userFromBackend.id,
+        external_id: userFromBackend.external_id,
+        nombre: userFromBackend.name,
+        email: userFromBackend.email,
+        cedula: userFromBackend.dni,
+        role: userFromBackend.role,
+        status: userFromBackend.status,
+        edad: userFromBackend.age,
+        estate: userFromBackend.estate,
+        address: userFromBackend.address,
+        nombreResponsable: userFromBackend.nombreResponsable || '',
+        dniResponsable: userFromBackend.dniResponsable || '',
+        telefonoResponsable: userFromBackend.telefonoResponsable || '',
+      };
+
+      console.log("Datos mapeados a guardar:", userData);
+
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      return userData;
     } catch (error: any) {
       console.error("Login error:", error);
       throw error;
     }
   },
+
+  getCurrentUser() {
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  },
+
+  logout() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  }
 };
-
-// export function getCurrentUser() {
-//   if (typeof window === "undefined") return null;
-//   const user = localStorage.getItem("user");
-//   return user ? JSON.parse(user) : null;
-// }
-
-// export function getUserRole(): "USUARIO" | "ADMINISTRADOR" | null {
-//   const user = getCurrentUser();
-//   return user?.role || null;
-// }

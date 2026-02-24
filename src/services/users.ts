@@ -1,0 +1,77 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+export const userService = {
+
+  async getAll() {
+    try {
+      const res = await fetch(`${API_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al obtener los usuarios");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error: unknown) {
+      let msg = "Error desconocido";
+      if (error instanceof Error) {
+        msg = error.message;
+      }
+
+      console.error(msg);
+      return { msg, data: [] };
+    }
+  },
+
+  async createUser(data: any) {
+    const response = await fetch(`${API_URL}/save-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Lanzamos un objeto con msg y errors
+      throw {
+        msg: result.msg || "Error al crear usuario",
+        errors: result.errors || []
+      };
+    }
+
+    return result;
+  },
+
+  async getResponsibleByDni(dni: string) {
+    try {
+      const res = await fetch(`${API_URL}/responsibles/${dni}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (res.status === 404) {
+        return null;
+      }
+
+      if (!res.ok) {
+        throw new Error("Error al buscar el responsable");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error: unknown) {
+      console.error("Error en getResponsibleByDni:", error);
+      return null;
+    }
+  },
+};
