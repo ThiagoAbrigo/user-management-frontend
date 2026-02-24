@@ -21,7 +21,7 @@ export const NAV_DATA: NavSection[] = [
       {
         title: "Carnetizacion",
         icon: Icons.User,
-        url: "/pages/participant/register",
+        url: "/pages/participant/carnet",
         roles: ["USUARIO"],
         items: [],
       },
