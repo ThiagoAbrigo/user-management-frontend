@@ -74,4 +74,33 @@ export const userService = {
       return null;
     }
   },
+async updateUser(externalId: string, data: any) {
+    try {
+      const response = await fetch(
+        `${API_URL}/participants/${externalId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+  
+      const result = await response.json();
+  
+      if (!response.ok) {
+        throw {
+          msg: result.msg || "Error al actualizar usuario",
+          errors: result.errors || {}
+        };
+      }
+  
+      return result;
+  
+    } catch (error: any) {
+      console.error("Error en updateUser:", error);
+      throw error;
+    }
+  }
 };
