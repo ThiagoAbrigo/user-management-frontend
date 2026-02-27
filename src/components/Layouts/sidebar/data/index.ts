@@ -19,7 +19,7 @@ export const NAV_DATA: NavSection[] = [
         items: [],
       },
       {
-        title: "Carnetizacion",
+        title: "Mi carnet",
         icon: Icons.User,
         url: "/pages/participant/carnet",
         roles: ["USUARIO"],

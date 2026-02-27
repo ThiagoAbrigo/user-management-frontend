@@ -110,7 +110,7 @@ export default function UserForm() {
 
       console.log("Usuario creado:", response);
 
-      alert("Usuario registrado correctamente");
+      alert("Usuario creado correctamente");
       setFormData({
         name: "",
         dni: "",
@@ -234,6 +234,7 @@ export default function UserForm() {
               setFormData={setFormData}
               handleChange={handleChange}
               errors={errors}
+              setErrors={setErrors} 
               disabled={!isMinor}
             />
           )}

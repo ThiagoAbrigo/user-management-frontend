@@ -306,17 +306,17 @@ const CarnetPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Nombre Completo</label>
-                  <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
                   <ErrorMessage message={errors.nombre} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Cédula</label>
-                  <input type="text" name="cedula" value={formData.cedula} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="text" name="cedula" value={formData.cedula} onChange={handleInputChange} className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
                   <ErrorMessage message={errors.cedula} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="text" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
                   <ErrorMessage message={errors.email} />
                 </div>
                 <div>
@@ -334,20 +334,28 @@ const CarnetPage: React.FC = () => {
               {isEstamentoExterno && (
                 <div className="border-t border-slate-700 pt-6">
                   <h3 className="text-lg font-semibold text-white mb-4">Datos del Responsable</h3>
+                  {Number(formData.edad) >= 18 && (
+      <p className="text-sm text-yellow-500 mb-8">
+        ⚠️ Los campos del responsable están deshabilitados porque el usuario es mayor de edad.
+      </p>
+    )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">DNI Responsable</label>
-                      <input type="text" name="dniResponsable" value={formData.dniResponsable} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <input type="text" name="dniResponsable" value={formData.dniResponsable} onChange={handleInputChange}  disabled={Number(formData.edad) >= 18}
+          className={`w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none ${Number(formData.edad) >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`} />
                       <ErrorMessage message={errors.dniResponsable} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">Nombre Responsable</label>
-                      <input type="text" name="nombreResponsable" value={formData.nombreResponsable} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <input type="text" name="nombreResponsable" value={formData.nombreResponsable} onChange={handleInputChange} disabled={Number(formData.edad) >= 18}
+          className={`w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none ${Number(formData.edad) >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`} />
                       <ErrorMessage message={errors.nombreResponsable} />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-slate-300 mb-2">Teléfono Responsable</label>
-                      <input type="tel" name="telefonoResponsable" value={formData.telefonoResponsable} onChange={handleInputChange} required className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <input type="tel" name="telefonoResponsable" value={formData.telefonoResponsable} onChange={handleInputChange} disabled={Number(formData.edad) >= 18}
+          className={`w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 outline-none ${Number(formData.edad) >= 18 ? 'opacity-50 cursor-not-allowed' : ''}`} />
                       <ErrorMessage message={errors.telefonoResponsable} />
                     </div>
                   </div>

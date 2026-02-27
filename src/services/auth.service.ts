@@ -18,7 +18,7 @@ export const authService = {
 
       const userFromBackend = data.data;
 
-      console.log("Usuario desde backend:", userFromBackend);
+      // console.log("Usuario desde backend:", userFromBackend);
 
       const userData = {
         id: userFromBackend.id,
@@ -46,7 +46,7 @@ export const authService = {
 
       return userData;
     } catch (error: any) {
-      console.error("Login error:", error);
+      // console.error("Login error:", error);
       throw error;
     }
   },

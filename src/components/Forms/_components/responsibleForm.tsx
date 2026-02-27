@@ -9,10 +9,11 @@ interface Props {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errors: any;
+  setErrors: React.Dispatch<React.SetStateAction<any>>;
   disabled: boolean;
 }
 
-export const ResponsibleForm = ({ formData, setFormData, handleChange, errors, disabled }: Props) => {
+export const ResponsibleForm = ({ formData, setFormData, handleChange, errors, disabled, setErrors   }: Props) => {
   const [searching, setSearching] = useState(false);
   useEffect(() => {
     if (formData.responsibleDni?.length === 10 && !disabled) {
@@ -44,6 +45,13 @@ export const ResponsibleForm = ({ formData, setFormData, handleChange, errors, d
       ...prev,
       [name]: numericValue
     }));
+    if (errors[name]) {
+    setErrors((prev: any) => {
+      const newErrors = { ...prev };
+      delete newErrors[name];
+      return newErrors;
+    });
+  }
   };
   return (
     <div className="animate-in fade-in slide-in-from-top-4 duration-300">
