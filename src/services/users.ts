@@ -40,11 +40,10 @@ export const userService = {
     const result = await response.json();
 
     if (!response.ok) {
-      // Lanzamos un objeto con msg y errors
-      throw {
-        msg: result.msg || "Error al crear usuario",
-        errors: result.errors || []
-      };
+      return Promise.reject({
+          msg: result.msg || "Error al actualizar usuario",
+          errors: result.errors || {}
+        });
     }
 
     return result;
@@ -90,17 +89,18 @@ async updateUser(externalId: string, data: any) {
       const result = await response.json();
   
       if (!response.ok) {
-        throw {
+        return Promise.reject({
           msg: result.msg || "Error al actualizar usuario",
           errors: result.errors || {}
-        };
+        });
       }
   
       return result;
   
     } catch (error: any) {
+      if (error.errors) throw error;
       console.error("Error en updateUser:", error);
-      throw error;
+      throw { msg: "Error de conexión con el servidor", errors: {} };
     }
   }
 };
