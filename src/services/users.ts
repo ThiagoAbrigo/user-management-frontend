@@ -7,8 +7,8 @@ export const userService = {
       const res = await fetch(`${API_URL}/users`, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       if (!res.ok) {
@@ -17,36 +17,59 @@ export const userService = {
 
       const data = await res.json();
       return data;
-    } catch (error: unknown) {
-      let msg = "Error desconocido";
-      if (error instanceof Error) {
-        msg = error.message;
-      }
-
-      console.error(msg);
-      return { msg, data: [] };
+    } catch (err) {
+      console.error(err);
+      return null;
     }
   },
 
-  async createUser(data: any) {
-    const response = await fetch(`${API_URL}/save-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+  async createUser(userData: Record<string, any>) {
+    try {
+      const response = await fetch(`${API_URL}/save-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
 
-    const result = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      return Promise.reject({
-          msg: result.msg || "Error al actualizar usuario",
-          errors: result.errors || {}
-        });
+      if (!response.ok) {
+        throw {
+          response: {
+            data: data,
+            status: response.status
+          }
+        };
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error creando usuario:", error);
+      throw error;
     }
+  },
 
-    return result;
+  async getRoles() {
+    try {
+      const res = await fetch(`${API_URL}/role`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!res.ok) {
+        throw new Error("Error al obtener los roles");
+      }
+  
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   },
 
   async getResponsibleByDni(dni: string) {
@@ -73,7 +96,7 @@ export const userService = {
       return null;
     }
   },
-async updateUser(externalId: string, data: any) {
+  async updateUser(externalId: string, data: any) {
     try {
       const response = await fetch(
         `${API_URL}/participants/${externalId}`,
@@ -85,18 +108,18 @@ async updateUser(externalId: string, data: any) {
           body: JSON.stringify(data),
         }
       );
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         return Promise.reject({
           msg: result.msg || "Error al actualizar usuario",
           errors: result.errors || {}
         });
       }
-  
+
       return result;
-  
+
     } catch (error: any) {
       if (error.errors) throw error;
       console.error("Error en updateUser:", error);
