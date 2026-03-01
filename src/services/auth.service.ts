@@ -2,54 +2,25 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const authService = {
-  async login(email: string, password: string) {
-    try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+    async login(correoElectronico: string, contrasenia: string) {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ correoElectronico, contrasenia }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.msg || "Error al iniciar sesión");
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        // Retornamos directamente el error del backend
+        // En vez de usar "new Error", dejamos pasar la info
+        return Promise.reject(data);
       }
-
-      const userFromBackend = data.data;
-
-      // console.log("Usuario desde backend:", userFromBackend);
-
-      const userData = {
-        id: userFromBackend.id,
-        external_id: userFromBackend.external_id,
-        nombre: userFromBackend.name,
-        email: userFromBackend.email,
-        cedula: userFromBackend.dni,
-        role: userFromBackend.role,
-        status: userFromBackend.status,
-        edad: userFromBackend.age,
-        estate: userFromBackend.estate,
-        address: userFromBackend.address,
-        nombreResponsable: userFromBackend.nombreResponsable || '',
-        dniResponsable: userFromBackend.dniResponsable || '',
-        telefonoResponsable: userFromBackend.telefonoResponsable || '',
-      };
-
-      console.log("Datos mapeados a guardar:", userData);
-
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      return userData;
-    } catch (error: any) {
-      // console.error("Login error:", error);
-      throw error;
-    }
-  },
+  
+      return data; // Login exitoso
+    },
 
   getCurrentUser() {
     if (typeof window !== 'undefined') {
@@ -65,8 +36,8 @@ export const authService = {
     return null;
   },
 
-  logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  }
+    logout() {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+}
 };
