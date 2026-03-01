@@ -15,7 +15,7 @@ export default function ParticipantPage() {
   const fetchData = useCallback(async () => {
     try {
       const data = await userService.getAll();
-      setParticipants(data.data || []);
+      setParticipants(data?.usuarios || []);
     } catch (error: unknown) {
       console.error(error);
     } finally {
@@ -37,7 +37,33 @@ export default function ParticipantPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1080px]">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-end gap-3">
+
+        {/* Botón Ver Perfil */}
+        <Button
+          label="Ver Perfil"
+          shape="rounded"
+          size="small"
+          variant="outlineDark"
+          onClick={() => router.push("/pages/perfil")}
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          }
+        />
+
         <Button
           label="Registrar Nuevo"
           shape="rounded"
@@ -63,8 +89,8 @@ export default function ParticipantPage() {
           }
         />
       </div>
+
       <div className="space-y-10">
-        {/* Ya no pasamos handleStatusChange */}
         <ParticipantsTable data={participants} />
       </div>
     </div>

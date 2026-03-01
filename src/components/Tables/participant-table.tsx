@@ -13,23 +13,40 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
 
   const filteredData = data.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.dni.includes(searchTerm)
+      p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.numeroIdentificacion.includes(searchTerm)
   );
 
   const isEmpty = filteredData.length === 0;
 
   const columns: Column<Participant>[] = [
-    { header: "Nombre", accessor: "name" },
-    { header: "Email", accessor: "email" },
-    { header: "DNI", accessor: "dni" },
-    { header: "Edad", accessor: "age" },
-    { header: "Estamento", accessor: "estate" },
-    {
-      header: "Responsable",
-      accessor: (row) => row.responsible_name || "-",
+    { header: "Número de ID", accessor: "numeroIdentificacion" },
+    { header: "Nombre", accessor: "nombre" },
+    { header: "Apellido", accessor: "apellido" },
+    { 
+      header: "Edad", 
+      accessor: (row) => (
+        <span className="font-medium">{row.edad} años</span>
+      )
     },
-    { header: "Estado", accessor: "status" }, 
+    { header: "Rol", accessor: (row) => row.cuenta.rol },
+    { 
+      header: "Responsable", 
+      accessor: (row) => row.representante?.nombre || "-" 
+    },
+    { 
+      header: "Estado", 
+      accessor: (row) => (
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+          row.estado === "activo" 
+            ? "bg-green-100 text-green-700" 
+            : "bg-red-100 text-red-700"
+        }`}>
+          {row.estado === "activo" ? "Activo" : "Inactivo"}
+        </span>
+      )
+    },
   ];
 
   return (
@@ -37,7 +54,7 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
       <div className="flex items-center gap-4 rounded-xl border p-2">
         <input
           type="text"
-          placeholder="Buscar por nombre o DNI"
+          placeholder="Buscar por nombre, apellido o DNI"
           className="w-full py-2 pl-3 text-sm outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

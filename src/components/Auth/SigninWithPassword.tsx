@@ -32,19 +32,18 @@ export default function SigninWithPassword() {
   
     try {
       const user = await authService.login(data.email, data.password);
+    
+      console.log("Login exitoso:", user.cuenta);
       
-      // Pequeño delay para asegurar que la cookie se estableció
-      setTimeout(() => {
-        if (user.role === "ADMINISTRADOR") {
-          router.push("/pages/participant");
-        } else if (user.role === "USUARIO") {
-          router.push("/pages/participant/carnet");
-        }
-      }, 100);
+      localStorage.setItem("external_id", user.cuenta.external_id);
+    
+      if (user.cuenta.rol === "ADMINISTRADOR") {
+        router.push("/pages/participant"); // página de admin
+      } else {
+        router.push("/pages/perfil"); // otra página para usuarios normales
+      }
     } catch (err: any) {
-      setError(err.message || "Credenciales inválidas. Intente nuevamente.");
-    } finally {
-      setLoading(false);
+      setError(err.error || "Credenciales inválidas. Intente nuevamente.");
     }
   };
 

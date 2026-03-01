@@ -282,13 +282,13 @@ const CarnetPage: React.FC = () => {
             <Edit className="w-5 h-5" />
             Editar Información
           </button>
-          <button
+          {/* <button
             onClick={handleDownload}
             className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
           >
             <Download className="w-5 h-5" />
             Descargar Carnet (PDF)
-          </button>
+          </button> */}
         </div>
       </div>
 
