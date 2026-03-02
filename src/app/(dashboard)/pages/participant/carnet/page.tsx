@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, QrCode, Download, User, Edit, X, Save } from 'lucide-react';
+import Swal from 'sweetalert2';
 import { authService } from '@/services/auth.service';
 import { userService } from '@/services/users';
 import ErrorMessage from '@/components/FormElements/errormessage';
@@ -73,7 +74,12 @@ const CarnetPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    alert('Preparando descarga del carnet...');
+    Swal.fire({
+      icon: 'info',
+      title: 'Descarga',
+      text: 'Preparando descarga del carnet...',
+      confirmButtonText: 'Aceptar',
+    });
   };
 
   const openEditModal = () => {
@@ -106,7 +112,12 @@ const CarnetPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userData?.external_id) {
-      alert("No se pudo identificar el usuario");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo identificar el usuario',
+        confirmButtonText: 'Aceptar',
+      });
       return;
     }
     setSaving(true);
@@ -142,7 +153,12 @@ const CarnetPage: React.FC = () => {
         } : prev
       );
       closeModal();
-      alert("Datos actualizados correctamente");
+      Swal.fire({
+        icon: 'success',
+        title: 'Actualizado',
+        text: 'Datos actualizados correctamente',
+        confirmButtonText: 'Aceptar',
+      });
     } catch (error: any) {
       if (error.errors) {
         const backendErrors = error.errors;
@@ -157,7 +173,12 @@ const CarnetPage: React.FC = () => {
           telefonoResponsable: backendErrors.responsiblePhone,
         });
       } else {
-        alert(error.msg || "Error al actualizar");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.msg || 'Error al actualizar',
+          confirmButtonText: 'Aceptar',
+        });
       }
     } finally {
       setSaving(false);

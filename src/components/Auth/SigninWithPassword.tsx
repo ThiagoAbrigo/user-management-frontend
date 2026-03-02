@@ -2,6 +2,7 @@
 import { EmailIcon, PasswordIcon } from "@/assets/icons";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import InputGroup from "../FormElements/InputGroup";
 import { authService } from "@/services/auth.service";
 
@@ -37,11 +38,12 @@ export default function SigninWithPassword() {
       
       localStorage.setItem("external_id", user.cuenta.external_id);
     
-      if (user.cuenta.rol === "ADMINISTRADOR") {
-        router.push("/pages/participant"); // página de admin
-      } else {
-        router.push("/pages/perfil"); // otra página para usuarios normales
-      }
+      const destino = user.cuenta.rol === "ADMINISTRADOR" ? "/pages/participant" : "/pages/perfil";
+      
+      localStorage.setItem("external_id", user.cuenta.external_id);
+      localStorage.setItem("showWelcome", "true");
+      
+      router.push(destino);
     } catch (err: any) {
       setError(err.error || "Credenciales inválidas. Intente nuevamente.");
     }
@@ -59,7 +61,7 @@ export default function SigninWithPassword() {
         type="email"
         label=""
         className="mb-4 [&_input]:border-gray-300 [&_input]:bg-white [&_input]:py-[15px] [&_input]:text-gray-900 [&_input]:placeholder-gray-400 focus:[&_input]:border-indigo-500 dark:[&_input]:border-gray-700 dark:[&_input]:bg-gray-900 dark:[&_input]:text-white dark:[&_input]:placeholder-gray-500"
-        placeholder="Ingrese su email"
+        placeholder="Ingrese su correo electrónico"
         name="email"
         handleChange={handleChange}
         value={data.email}

@@ -1,10 +1,14 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Mail, MapPin, Globe, Shield, Edit3, Share2, Briefcase, Heart, User, FolderOpen, ExternalLink, Linkedin, Instagram, Facebook, Twitter } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
+import { Mail, MapPin, Globe, Shield, Edit3, Share2, Briefcase, Heart, User, FolderOpen, ExternalLink, Linkedin, Instagram, Facebook, Twitter, LogOut } from 'lucide-react';
 import { perfilService } from '@/services/perfil';
+import { authService } from '@/services/auth.service';
 import ErrorMessage from '@/components/FormElements/errormessage';
 
 const ProfilePage: React.FC = () => {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -12,6 +16,13 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showCard, setShowCard] = useState(false);
+  const avatarUrl = profileData?.usuario?.photo || profileData?.usuario?.foto || profileData?.perfil?.photo || profileData?.perfil?.foto || profileData?.cuenta?.photo || profileData?.cuenta?.foto || profileData?.cuenta?.avatar || profileData?.usuario?.avatar || null;
+
+  const handleLogout = () => {
+    authService.logout();
+    router.push('/');
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,6 +40,18 @@ const ProfilePage: React.FC = () => {
     };
 
     fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const showWelcome = localStorage.getItem("showWelcome");
+    if (showWelcome === "true") {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Bienvenido!',
+        confirmButtonText: 'Aceptar',
+      });
+      localStorage.removeItem("showWelcome");
+    }
   }, []);
 
   const handleInputChange = (section: string, field: string, value: any) => {
@@ -124,6 +147,84 @@ const ProfilePage: React.FC = () => {
     setIsEditing(true);
   };
 
+  const printCard = async () => {
+    if (!profileData) return;
+    // Construir elemento con el diseño del carnet (sin QR)
+    const el = document.createElement('div');
+    el.style.width = '760px';
+    el.style.padding = '24px';
+    el.style.boxSizing = 'border-box';
+    el.style.background = 'linear-gradient(135deg,#0f1724 0%, #0b1620 100%)';
+    el.style.color = '#fff';
+    el.style.borderRadius = '12px';
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="display:flex;gap:16px;align-items:center;">
+          ${avatarUrl ? `<img src="${avatarUrl}" style="width:96px;height:96px;border-radius:9999px;object-fit:cover;"/>` : `<div style="width:96px;height:96px;border-radius:9999px;background:#1f2937;display:flex;align-items:center;justify-content:center"></div>`}
+          <div>
+            <div style="font-size:28px;font-weight:700">${profileData.usuario.nombre || ''} ${profileData.usuario.apellido || ''}</div>
+            <div style="color:#9aa4b2;font-size:12px;margin-top:6px">${profileData.cuenta?.rol || 'Participante'}</div>
+            <div style="color:#9aa4b2;font-size:12px;margin-top:10px">NÚMERO DE IDENTIFICACIÓN</div>
+            <div style="font-weight:700;font-size:18px;margin-top:6px">#${profileData.usuario.numeroIdentificacion || profileData.cuenta?.external_id || ''}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;margin-top:18px;">
+        <div style="flex:1">
+          <div style="font-size:11px;color:#9aa4b2">CELULAR</div>
+          <div style="font-weight:700">${profileData.perfil?.celular || '-'}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:#9aa4b2">FECHA DE NACIMIENTO</div>
+          <div style="font-weight:700">${profileData.usuario.fechaNacimiento || '-'}</div>
+        </div>
+      </div>
+    `;
+
+    // Añadir temporalmente al body para generación
+    el.id = 'carnet-to-print';
+    el.style.margin = '20px auto';
+    document.body.appendChild(el);
+
+    // Cargar html2pdf si no está
+    const loadScript = (src: string) => new Promise<void>((res, rej) => {
+      if ((window as any).html2pdf) return res();
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => res();
+      s.onerror = () => rej(new Error('Failed to load script'));
+      document.head.appendChild(s);
+    });
+
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js');
+      const opt = {
+        margin:       0.3,
+        filename:     `carnet_${(profileData.usuario.nombre || 'user')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+      // @ts-ignore
+      (window as any).html2pdf().set(opt).from(el).save();
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+      // Fallback: abrir en nueva ventana e imprimir
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(el.outerHTML);
+        w.document.close();
+        setTimeout(() => w.print(), 300);
+      }
+    } finally {
+      // Limpiar elemento temporal
+      setTimeout(() => {
+        const temp = document.getElementById('carnet-to-print');
+        if (temp) temp.remove();
+      }, 1000);
+    }
+  };
+
 
   if (loading) return <div>Cargando perfil...</div>;
   if (!profileData) return <div>No se encontró el perfil</div>;
@@ -137,11 +238,21 @@ const ProfilePage: React.FC = () => {
         {/* SIDEBAR: PERFIL IZQUIERDA */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-[#161b22] rounded-3xl p-8 border border-gray-800 flex flex-col items-center text-center">
+              <div className="mb-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Mi Perfil
+        </h2>
+      </div>
             <div className="relative mb-6">
               <div className="w-32 h-32 rounded-full bg-[#21262d] flex items-center justify-center border-4 border-[#1f2937]">
-                <User size={60} className="text-gray-500" />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="foto" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <User size={60} className="text-gray-500" />
+                )}
               </div>
             </div>
+            
 
             <h1 className="text-2xl font-bold text-white mb-1">{usuario.nombre} {usuario.apellido}</h1>
             <p className="text-blue-400 font-medium text-sm mb-4">{cuenta?.rol || "Participante"}</p>
@@ -162,14 +273,31 @@ const ProfilePage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex w-full gap-3">
+            <div className="flex w-full gap-3 flex-col">
               {!isEditing ? (
-                <button
-                  onClick={handleEdit}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-semibold"
-                >
-                  Editar Perfil
-                </button>
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-semibold"
+                  >
+                    Editar Perfil
+                  </button>
+
+                  <button
+                    onClick={() => setShowCard(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-semibold"
+                  >
+                    Ver Carnet
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={18} />
+                    Cerrar sesión
+                  </button>
+                </>
               ) : (
                 <>
                   <button
@@ -331,7 +459,7 @@ const ProfilePage: React.FC = () => {
               />
 
               <InfoField
-                label="Correo"
+                label="Correo electrónico"
                 value={cuenta.correoElectronico}
                 isEditing={isEditing}
                 onChange={(val) => handleInputChangeWithErrorClear("cuenta", "correoElectronico", val)}
@@ -349,7 +477,7 @@ const ProfilePage: React.FC = () => {
               />
 
               <InfoField
-                label="Identificación"
+                label="Número de identificación"
                 value={usuario.numeroIdentificacion}
                 isEditing={isEditing}
                 onChange={(val) => handleInputChangeWithErrorClear("usuario", "numeroIdentificacion", val)}
@@ -522,11 +650,19 @@ const ProfilePage: React.FC = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#0b0e14] bg-opacity-40 p-6 rounded-2xl border border-gray-800">
                 <InfoField
-                  label="Nombre"
+                  label="Nombres del representante"
                   value={representante?.nombre}
                   isEditing={isEditing}
                   onChange={(val) => handleInputChangeWithErrorClear("representante", "nombre", val)}
                   error={fieldErrors["representante_nombre"]}
+                />
+
+                <InfoField
+                  label="Apellidos del representante"
+                  value={representante?.apellido || ""}
+                  isEditing={isEditing}
+                  onChange={(val) => handleInputChangeWithErrorClear("representante", "apellido", val)}
+                  error={fieldErrors["representante_apellido"]}
                 />
 
                 <InfoField
@@ -538,7 +674,7 @@ const ProfilePage: React.FC = () => {
                 />
 
                 <InfoField
-                  label="Identificación"
+                  label="Número de identificación del representante"
                   value={representante?.numeroIdentificacion}
                   isEditing={isEditing}
                   onChange={(val) => handleInputChangeWithErrorClear("representante", "numeroIdentificacion", val)}
@@ -549,6 +685,54 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
       </div>
+      {showCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#0b1720] rounded-2xl p-6 w-[760px] max-w-full text-gray-200">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="foto" className="w-24 h-24 rounded-full object-cover" />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-[#1f2937] flex items-center justify-center"><User size={36} className="text-gray-500" /></div>
+                )}
+                <div>
+                  <div className="text-2xl font-bold">{profileData.usuario.nombre} {profileData.usuario.apellido}</div>
+                  <div className="text-sm text-blue-300 mt-1">{profileData.cuenta?.rol || 'Participante'}</div>
+                  <div className="text-xs text-gray-400 mt-2">NÚMERO DE IDENTIFICACIÓN</div>
+                  <div className="font-semibold text-white mt-1">#{profileData.usuario.numeroIdentificacion}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-6 mt-6">
+              <div className="flex-1 bg-transparent">
+                <div className="text-xs text-gray-400">CELULAR</div>
+                <div className="text-lg font-semibold">{profileData.perfil?.celular || '-'}</div>
+              </div>
+
+              <div className="flex-1 bg-transparent">
+                <div className="text-xs text-gray-400">FECHA DE NACIMIENTO</div>
+                <div className="text-lg font-semibold">{profileData.usuario.fechaNacimiento || '-'}</div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={printCard}
+                className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Descargar PDF
+              </button>
+              <button
+                onClick={() => setShowCard(false)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
