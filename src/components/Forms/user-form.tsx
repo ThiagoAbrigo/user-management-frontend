@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiUser, FiCreditCard, FiMail, FiMapPin, FiUsers } from "react-icons/fi";
+import Swal from 'sweetalert2';
 import { userService } from "@/services/users";
 import InputGroup from "../FormElements/InputGroup";
 import ErrorMessage from "../FormElements/errormessage";
@@ -27,6 +28,7 @@ export default function UserForm() {
     rep_tipoIdentificacion: "CEDULA",
     rep_numeroIdentificacion: "",
     rep_nombre: "",
+    rep_apellido: "",
     rep_celular: "",
   });
 
@@ -93,9 +95,41 @@ export default function UserForm() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!formData.numeroIdentificacion) {
+      newErrors.numeroIdentificacion = "Campo requerido";
+    }
+    if (!formData.nombre) {
+      newErrors.nombre = "Campo requerido";
+    }
+    if (!formData.apellido) {
+      newErrors.apellido = "Campo requerido";
+    }
+    if (!formData.rol) {
+      newErrors.rol = "Campo requerido";
+    }
+    if (!formData.fechaNacimiento) {
+      newErrors.fechaNacimiento = "Campo requerido";
+    }
+    if (!formData.correoElectronico) {
+      newErrors.correoElectronico = "Campo requerido";
+    }
+    if (!formData.password) {
+      newErrors.password = "Campo requerido";
+    }
+    return newErrors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -116,32 +150,46 @@ export default function UserForm() {
           tipoIdentificacion: formData.rep_tipoIdentificacion,
           numeroIdentificacion: formData.rep_numeroIdentificacion,
           nombre: formData.rep_nombre,
+          apellido: formData.rep_apellido,
           celular: formData.rep_celular || undefined,
         };
       }
 
       const response = await userService.createUser(payload);
-      alert("Usuario creado correctamente");
-
-      setFormData({
-        tipoIdentificacion: "CEDULA",
-        numeroIdentificacion: "",
-        nombre: "",
-        apellido: "",
-        rol: "",
-        fechaNacimiento: "",
-        correoElectronico: "",
-        password: "",
-        rep_tipoIdentificacion: "CEDULA",
-        rep_numeroIdentificacion: "",
-        rep_nombre: "",
-        rep_celular: "",
+      // show success message with Swal
+      Swal.fire({
+        icon: 'success',
+        title: 'Usuario creado',
+        text: 'El usuario fue registrado correctamente',
+        confirmButtonText: 'Aceptar',
+      }).then(() => {
+        setFormData({
+          tipoIdentificacion: "CEDULA",
+          numeroIdentificacion: "",
+          nombre: "",
+          apellido: "",
+          rol: "",
+          fechaNacimiento: "",
+          correoElectronico: "",
+          password: "",
+          rep_tipoIdentificacion: "CEDULA",
+          rep_numeroIdentificacion: "",
+          rep_nombre: "",
+          rep_apellido: "",
+          rep_celular: "",
+        });
+        // regresar a la lista de participantes
+        router.push("/pages/participant");
       });
-
-      router.push("/usuarios");
 
     } catch (error: any) {
       console.log("Error completo:", error);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo crear el usuario',
+      });
 
       if (error.response?.data?.errores) {
         setErrors(error.response.data.errores);
@@ -219,7 +267,7 @@ export default function UserForm() {
           <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
             <div>
               <InputGroup
-                label="Nombre"
+                label="Nombres"
                 name="nombre"
                 type="text"
                 placeholder="Juan"
@@ -231,7 +279,7 @@ export default function UserForm() {
             </div>
             <div>
               <InputGroup
-                label="Apellido"
+                label="Apellidos"
                 name="apellido"
                 type="text"
                 placeholder="Perez"
@@ -297,7 +345,7 @@ export default function UserForm() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tipo de ID del Representante
+                    Tipo de Identificación del representante
                   </label>
                   <select
                     name="rep_tipoIdentificacion"
@@ -312,7 +360,7 @@ export default function UserForm() {
                 </div>
                 <div>
                   <InputGroup
-                    label="Cédula del Representante"
+                    label="Número de identificación del representante"
                     name="rep_numeroIdentificacion"
                     type="text"
                     placeholder="1101234567"
@@ -324,15 +372,27 @@ export default function UserForm() {
                 </div>
                 <div>
                   <InputGroup
-                    label="Nombre del Representante"
+                    label="Nombres del representante"
                     name="rep_nombre"
                     type="text"
-                    placeholder="Carlos Perez"
+                    placeholder="Carlos"
                     value={formData.rep_nombre}
                     handleChange={handleChange}
                     icon={<FiUser className="text-gray-400" size={18} />}
                   />
                   <ErrorMessage message={errors.rep_nombre} />
+                </div>
+                <div>
+                  <InputGroup
+                    label="Apellidos del representante"
+                    name="rep_apellido"
+                    type="text"
+                    placeholder="Perez"
+                    value={formData.rep_apellido}
+                    handleChange={handleChange}
+                    icon={<FiUser className="text-gray-400" size={18} />}
+                  />
+                  <ErrorMessage message={errors.rep_apellido} />
                 </div>
                 <div>
                   <InputGroup
@@ -355,6 +415,14 @@ export default function UserForm() {
             className="mt-8 w-full py-4 text-lg"
             variant="primary"
           />
+          {/* botón atrás */}
+          <button
+            type="button"
+            onClick={() => router.push("/pages/participant")}
+            className="mt-4 w-full py-4 text-lg bg-gray-500 hover:bg-gray-400 text-white rounded-lg font-semibold"
+          >
+            Atrás
+          </button>
         </form>
       </div>
     </div>

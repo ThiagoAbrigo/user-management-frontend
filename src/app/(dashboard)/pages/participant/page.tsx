@@ -1,16 +1,35 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import { ParticipantsTable } from "@/components/Tables/participant-table";
 import type { Participant } from "@/types/participant";
 import Loader from "@/components/Loader/loader";
 import { Button } from "@/components/ui-elements/button";
 import { userService } from "@/services/users";
+import { authService } from "@/services/auth.service";
 
 export default function ParticipantPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const showWelcome = localStorage.getItem("showWelcome");
+    if (showWelcome === "true") {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Bienvenido!',
+        confirmButtonText: 'Aceptar',
+      });
+      localStorage.removeItem("showWelcome");
+    }
+  }, []);
+
+  const handleLogout = () => {
+    authService.logout();
+    router.push('/');
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -37,6 +56,11 @@ export default function ParticipantPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1080px]">
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Lista de Usuarios
+        </h2>
+      </div>
       <div className="mb-4 flex justify-end gap-3">
 
         {/* Botón Ver Perfil */}
@@ -87,6 +111,13 @@ export default function ParticipantPage() {
               <line x1="22" y1="11" x2="16" y2="11" />
             </svg>
           }
+        />
+        <Button
+          label="Cerrar sesión"
+          shape="rounded"
+          size="small"
+          variant="danger"
+          onClick={handleLogout}
         />
       </div>
 

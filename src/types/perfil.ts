@@ -19,6 +19,7 @@ export interface UpdateProfileData {
     };
     representante?: {
       nombre?: string;
+      apellido?: string;
       celular?: string;
       numeroIdentificacion?: string;
     };

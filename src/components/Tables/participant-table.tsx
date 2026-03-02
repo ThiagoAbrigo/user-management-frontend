@@ -3,6 +3,7 @@
 import { Column, TableBase } from "@/components/Tables/tablebase";
 import { Participant } from "@/types/participant";
 import { useState } from "react";
+import { UserProfileModal } from "@/components/UserProfileModal";
 
 interface ParticipantsTableProps {
   data: Participant[];
@@ -10,6 +11,13 @@ interface ParticipantsTableProps {
 
 export function ParticipantsTable({ data }: ParticipantsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleRowClick = (participant: Participant) => {
+    setSelectedUserId(participant.external_id || participant.id);
+    setIsModalOpen(true);
+  };
 
   const filteredData = data.filter(
     (p) =>
@@ -21,9 +29,9 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
   const isEmpty = filteredData.length === 0;
 
   const columns: Column<Participant>[] = [
-    { header: "Número de ID", accessor: "numeroIdentificacion" },
-    { header: "Nombre", accessor: "nombre" },
-    { header: "Apellido", accessor: "apellido" },
+    { header: "Número de identificación", accessor: "numeroIdentificacion" },
+    { header: "Nombres", accessor: "nombre" },
+    { header: "Apellidos", accessor: "apellido" },
     { 
       header: "Edad", 
       accessor: (row) => (
@@ -33,7 +41,11 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
     { header: "Rol", accessor: (row) => row.cuenta.rol },
     { 
       header: "Responsable", 
-      accessor: (row) => row.representante?.nombre || "-" 
+      accessor: (row) => {
+        const rep = row.representante;
+        if (!rep) return "-";
+        return `${rep.nombre}${rep.apellido ? ' ' + rep.apellido : ''}`;
+      } 
     },
     { 
       header: "Estado", 
@@ -54,7 +66,7 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
       <div className="flex items-center gap-4 rounded-xl border p-2">
         <input
           type="text"
-          placeholder="Buscar por nombre, apellido o DNI"
+          placeholder="Buscar por nombres, apellidos o número de identificación"
           className="w-full py-2 pl-3 text-sm outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -66,11 +78,19 @@ export function ParticipantsTable({ data }: ParticipantsTableProps) {
           <p>No hay registros para mostrar</p>
         </div>
       ) : (
-        <TableBase
-          columns={columns}
-          data={filteredData}
-          rowKey={(p) => p.external_id}
-        />
+        <>
+          <TableBase
+            columns={columns}
+            data={filteredData}
+            rowKey={(p) => p.external_id}
+            onRowClick={handleRowClick}
+          />
+          <UserProfileModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            userId={selectedUserId || ""}
+          />
+        </>
       )}
     </div>
   );

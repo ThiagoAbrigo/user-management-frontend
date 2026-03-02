@@ -21,9 +21,10 @@ interface TableBaseProps<T> {
   columns: Column<T>[];
   data: T[];
   rowKey: (row: T) => string;
+  onRowClick?: (row: T) => void;
 }
 
-export function TableBase<T>({ columns, data, rowKey }: TableBaseProps<T>) {
+export function TableBase<T>({ columns, data, rowKey, onRowClick }: TableBaseProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   useEffect(() => {
@@ -56,7 +57,10 @@ export function TableBase<T>({ columns, data, rowKey }: TableBaseProps<T>) {
           {currentData.map((row) => (
             <TableRow
               key={rowKey(row)}
-              className="transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50"
+              onClick={() => onRowClick?.(row)}
+              className={`transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 ${
+                onRowClick ? 'cursor-pointer' : ''
+              }`}
             >
               {columns.map((col, i) => (
                 <TableCell

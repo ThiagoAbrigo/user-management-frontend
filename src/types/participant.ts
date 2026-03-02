@@ -12,6 +12,7 @@ export interface Participant {
   };
   representante?: {
     nombre: string;
+    apellido?: string;
   } | null;
   external_id: string;
 }
